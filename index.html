@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>School Futsal — 베타</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#111827;--green:#15803d;--red:#dc2626;--amber:#b45309}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif}
+button,input,textarea{font:inherit} button{cursor:pointer}
+header{background:#111827;color:#fff;position:sticky;top:0;z-index:5}.top{max-width:1050px;margin:auto;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-weight:800;letter-spacing:-.4px}.tabs{display:flex;gap:8px}.tabs button{border:1px solid #374151;background:#1f2937;color:#fff;border-radius:10px;padding:8px 12px}.tabs button.active{background:#fff;color:#111827}
+main{max-width:1050px;margin:0 auto;padding:28px 20px 70px}.hero{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}.eyebrow{font-size:13px;color:var(--muted);font-weight:700}.hero h1{margin:5px 0;font-size:32px;letter-spacing:-1.5px}.hero p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.day{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.04)}.day h3{margin:0 0 4px}.date{color:var(--muted);font-size:13px}.count{font-size:28px;font-weight:800;margin:18px 0 4px}.bar{height:7px;background:#eef2f7;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:#111827;border-radius:99px}.status{font-size:13px;font-weight:700;margin:10px 0 16px}.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}.day button,.primary{width:100%;border:0;background:#111827;color:#fff;border-radius:11px;padding:11px;font-weight:700}.day button:disabled{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
+.section{margin-top:30px}.section h2{font-size:19px;margin:0 0 12px}.notice,.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:10px}.notice b{display:block;margin-bottom:5px}.notice small{color:var(--muted)}
+.two{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);font-size:14px}.table th{color:var(--muted);font-weight:600}
+.overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal{width:min(470px,100%);background:#fff;border-radius:20px;padding:22px}.modal h2{margin:0 0 5px}.modal p{color:var(--muted);margin-top:5px}.field{margin:15px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}.field input,.field textarea{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:11px;outline:none}.field textarea{min-height:110px;resize:vertical}.actions{display:flex;gap:8px}.actions button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--line)}.actions .primary{border:0}
+.hidden{display:none!important}.login{max-width:400px;margin:60px auto}.login h1{font-size:25px}.muted{color:var(--muted)}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3f4f6;font-size:12px;font-weight:700}.danger{color:var(--red);background:#fff;border:1px solid #fecaca;padding:7px 10px;border-radius:9px}.success{color:var(--green)}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.hero{display:block}.hero h1{font-size:27px}.top{padding:13px 14px}main{padding:22px 14px 60px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="brand">⚽ School Futsal</div><div class="tabs"><button id="studentTab" class="active" onclick="showView('student')">학생</button><button id="adminTab" onclick="showView('admin')">관리자</button></div></div></header>
+
+<main>
+<section id="studentView">
+  <div class="hero"><div><div class="eyebrow" id="weekLabel"></div><h1>이번 주 풋살 모집</h1><p>월~목 중 원하는 시간에 신청하세요. 한 경기 최대 18명입니다.</p></div></div>
+  <div id="dayGrid" class="grid"></div>
+
+  <div class="section"><h2>📢 공지</h2><div id="noticeList"></div></div>
+  <div class="section two">
+    <div class="panel"><h2>💬 관리자에게 문의</h2><p class="muted">신청/취소, 구장 예약, 경기 관련 문의를 남길 수 있습니다.</p><button class="primary" onclick="openMessage()">문의 보내기</button></div>
+    <div class="panel"><h2>🔎 내 신청</h2><div id="myApplications"></div></div>
+  </div>
+</section>
+
+<section id="adminView" class="hidden">
+  <div id="adminLogin" class="login panel">
+    <div class="eyebrow">ADMIN</div><h1>관리자 로그인</h1><p class="muted">베타 데모 비밀번호: <b>1234</b></p>
+    <div class="field"><label>비밀번호</label><input id="adminPw" type="password" onkeydown="if(event.key==='Enter')login()"></div>
+    <button class="primary" onclick="login()">로그인</button>
+  </div>
+  <div id="adminPanel" class="hidden">
+    <div class="hero"><div><div class="eyebrow">ADMIN DASHBOARD</div><h1>풋살 운영 관리</h1><p>요일별 인원, 신청자, 구장 확보 여부와 공지를 관리합니다.</p></div><button class="primary" style="width:auto" onclick="logout()">로그아웃</button></div>
+    <div class="panel"><h2>이번 주 현황</h2><div id="adminDays"></div></div>
+    <div class="panel"><h2>신청자</h2><div id="adminApplicants"></div></div>
+    <div class="panel"><h2>공지 작성</h2><div class="field"><label>제목</label><input id="noticeTitle" placeholder="예: 월요일 풋살 구장 예약 부탁드립니다"></div><div class="field"><label>내용</label><textarea id="noticeBody" placeholder="참가자들에게 전달할 내용을 입력하세요."></textarea></div><button class="primary" onclick="addNotice()">공지 올리기</button></div>
+    <div class="panel"><h2>💬 문의함</h2><div id="adminMessages"></div></div>
+  </div>
+</section>
+</main>
+
+<div id="modal" class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal"><h2 id="modalTitle"></h2><p id="modalDesc"></p><div id="modalBody"></div></div></div>
+
+<script>
+const MAX=18, MIN=10, CLOSE_HOUR=17, CLOSE_MIN=40;
+const dayNames=['월요일','화요일','수요일','목요일'];
+const key='schoolFutsalBetaV1';
+let state=JSON.parse(localStorage.getItem(key)||'null')||{apps:[],notices:[],messages:[],secured:{},closed:{}};
+function save(){localStorage.setItem(key,JSON.stringify(state));renderAll()}
+function monday(d=new Date()){let x=new Date(d);let day=x.getDay();let diff=day===0?-6:1-day;x.setDate(x.getDate()+diff);x.setHours(0,0,0,0);return x}
+function currentWeek(){return monday()}
+function weekKey(){return currentWeek().toISOString().slice(0,10)}
+function dayDate(i){let d=currentWeek();d.setDate(d.getDate()+i);return d}
+function fmt(d){return `${d.getMonth()+1}/${d.getDate()}`}
+function isClosed(i){
+  const d=dayDate(i), now=new Date();
+  if(now.toDateString()!==d.toDateString()) return d < new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  return now.getHours()>CLOSE_HOUR || (now.getHours()===CLOSE_HOUR&&now.getMinutes()>=CLOSE_MIN);
+}
+function appsFor(i){return state.apps.filter(a=>a.week===weekKey()&&a.day===i)}
+function statusFor(i){
+  const n=appsFor(i).length, sec=!!state.secured[weekKey()+'-'+i];
+  if(isClosed(i)) return n>=MIN && sec ? ['경기 확정','green'] : ['경기 취소','red'];
+  if(n>=MAX) return sec ? ['모집 마감 · 구장 확보','green'] : ['모집 마감 · 구장 예약 필요','amber'];
+  if(n>=MIN && sec) return ['구장 확보 · 모집중','green'];
+  if(n>=MIN) return ['인원 달성 · 구장 예약 필요','amber'];
+  return ['모집중','green'];
+}
+function renderStudent(){
+ document.getElementById('weekLabel').textContent=`주간 모집 · ${fmt(dayDate(0))} ~ ${fmt(dayDate(3))}`;
+ const grid=document.getElementById('dayGrid');grid.innerHTML='';
+ dayNames.forEach((name,i)=>{
+  const n=appsFor(i).length, [st,cls]=statusFor(i), closed=isClosed(i);
+  const card=document.createElement('div');card.className='day';
+  card.innerHTML=`<h3>${name}</h3><div class="date">${fmt(dayDate(i))}</div><div class="count">${n} / ${MAX}</div><div class="bar"><i style="width:${Math.min(100,n/MAX*100)}%"></i></div><div class="status ${cls}">${st}</div><button ${closed||n>=MAX?'disabled':''} onclick="openApply(${i})">${closed?'신청 마감':n>=MAX?'모집 마감':'신청하기'}</button>`;
+  grid.appendChild(card);
+ });
+ let ns=state.notices.filter(n=>n.week===weekKey()).slice().reverse();
+ document.getElementById('noticeList').innerHTML=ns.length?ns.map(n=>`<div class="notice"><b>${esc(n.title)}</b><div>${esc(n.body).replace(/\n/g,'<br>')}</div><small>${new Date(n.at).toLocaleString('ko-KR')}</small></div>`).join(''):`<div class="notice muted">아직 공지가 없습니다.</div>`;
+ const my=state.apps.filter(a=>a.week===weekKey()&&a.name===getName());
+ document.getElementById('myApplications').innerHTML=my.length?my.map(a=>`<div class="notice"><b>${dayNames[a.day]} · ${a.name}</b><button class="danger" style="float:right" onclick="cancelApp('${a.id}')">취소</button><div class="${statusFor(a.day)[1]}">${statusFor(a.day)[0]}</div></div>`).join(''):`<span class="muted">신청한 경기가 없습니다.</span>`;
+}
+function getName(){return sessionStorage.getItem('studentName')||''}
+function openApply(i){
+ document.getElementById('modalTitle').textContent=`${dayNames[i]} 풋살 신청`;
+ document.getElementById('modalDesc').textContent=`현재 ${appsFor(i).length}/${MAX}명 · 마감 17:40`;
+ document.getElementById('modalBody').innerHTML=`<div class="field"><label>이름</label><input id="applyName" placeholder="이름을 입력하세요"></div><div class="actions"><button onclick="closeModal()">닫기</button><button class="primary" onclick="apply(${i})">신청하기</button></div>`;
+ document.getElementById('modal').style.display='flex';
+}
+function apply(i){
+ const name=document.getElementById('applyName').value.trim();
+ if(!name)return alert('이름을 입력해주세요.');
+ if(appsFor(i).some(a=>a.name===name))return alert('이미 신청한 이름입니다.');
+ if(appsFor(i).length>=MAX||isClosed(i))return alert('신청이 마감되었습니다.');
+ sessionStorage.setItem('studentName',name);
+ state.apps.push({id:crypto.randomUUID(),week:weekKey(),day:i,name,at:new Date().toISOString()});
+ closeModal();save();
+}
+function cancelApp(id){if(!confirm('이 신청을 취소할까요?'))return;state.apps=state.apps.filter(a=>a.id!==id);save()}
+function openMessage(){
+ document.getElementById('modalTitle').textContent='관리자에게 문의';
+ document.getElementById('modalDesc').textContent='이름과 문의 내용을 남겨주세요.';
+ document.getElementById('modalBody').innerHTML=`<div class="field"><label>이름</label><input id="msgName" value="${esc(getName())}" placeholder="이름"></div><div class="field"><label>내용</label><textarea id="msgBody" placeholder="문의 내용을 입력하세요."></textarea></div><div class="actions"><button onclick="closeModal()">닫기</button><button class="primary" onclick="sendMessage()">보내기</button></div>`;
+ document.getElementById('modal').style.display='flex';
+}
+function sendMessage(){const name=document.getElementById('msgName').value.trim(),body=document.getElementById('msgBody').value.trim();if(!name||!body)return alert('이름과 내용을 입력해주세요.');sessionStorage.setItem('studentName',name);state.messages.push({id:crypto.randomUUID(),week:weekKey(),name,body,reply:'',at:new Date().toISOString()});closeModal();save();alert('관리자에게 메시지를 보냈습니다.')}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function showView(v){document.getElementById('studentView').classList.toggle('hidden',v!=='student');document.getElementById('adminView').classList.toggle('hidden',v!=='admin');document.getElementById('studentTab').classList.toggle('active',v==='student');document.getElementById('adminTab').classList.toggle('active',v==='admin');if(v==='admin')renderAdmin()}
+function login(){if(document.getElementById('adminPw').value==='1234'){sessionStorage.setItem('admin','1');renderAdmin()}else alert('비밀번호가 틀렸습니다.')}
+function logout(){sessionStorage.removeItem('admin');renderAdmin()}
+function renderAdmin(){
+ const ok=sessionStorage.getItem('admin')==='1';document.getElementById('adminLogin').classList.toggle('hidden',ok);document.getElementById('adminPanel').classList.toggle('hidden',!ok);if(!ok)return;
+ let html='<table class="table"><tr><th>요일</th><th>인원</th><th>구장</th><th>상태</th><th>관리</th></tr>';
+ dayNames.forEach((name,i)=>{let n=appsFor(i).length, key=weekKey()+'-'+i,sec=!!state.secured[key],[st,cl]=statusFor(i);html+=`<tr><td><b>${name}</b><br><span class="muted">${fmt(dayDate(i))}</span></td><td>${n}/${MAX}</td><td>${sec?'<span class="success">확보</span>':'미확보'}</td><td class="${cl}">${st}</td><td><button onclick="toggleSecure(${i})">${sec?'구장 미확보':'구장 확보'}</button></td></tr>`});html+='</table>';document.getElementById('adminDays').innerHTML=html;
+ let aa=state.apps.filter(a=>a.week===weekKey());document.getElementById('adminApplicants').innerHTML=aa.length?`<table class="table"><tr><th>요일</th><th>이름</th><th>신청시간</th><th></th></tr>${aa.map(a=>`<tr><td>${dayNames[a.day]}</td><td>${esc(a.name)}</td><td>${new Date(a.at).toLocaleString('ko-KR')}</td><td><button class="danger" onclick="adminDelete('${a.id}')">삭제</button></td></tr>`).join('')}</table>`:'<span class="muted">신청자가 없습니다.</span>';
+ let mm=state.messages.filter(m=>m.week===weekKey()).slice().reverse();document.getElementById('adminMessages').innerHTML=mm.length?mm.map(m=>`<div class="notice"><b>${esc(m.name)}</b><small>${new Date(m.at).toLocaleString('ko-KR')}</small><div style="margin:8px 0">${esc(m.body)}</div>${m.reply?`<div class="panel" style="margin:0;background:#f9fafb"><b>관리자 답변</b><div>${esc(m.reply)}</div></div>`:''}<button onclick="replyMsg('${m.id}')">${m.reply?'답변 수정':'답변하기'}</button></div>`).join(''):'<span class="muted">문의가 없습니다.</span>';
+}
+function toggleSecure(i){const k=weekKey()+'-'+i;if(state.secured[k])delete state.secured[k];else state.secured[k]=true;save()}
+function adminDelete(id){if(confirm('신청자를 삭제할까요?')){state.apps=state.apps.filter(a=>a.id!==id);save()}}
+function replyMsg(id){const m=state.messages.find(x=>x.id===id);const r=prompt('답변 내용을 입력하세요.',m.reply||'');if(r!==null){m.reply=r;save()}}
+function addNotice(){const t=document.getElementById('noticeTitle').value.trim(),b=document.getElementById('noticeBody').value.trim();if(!t||!b)return alert('제목과 내용을 입력해주세요.');state.notices.push({week:weekKey(),title:t,body:b,at:new Date().toISOString()});document.getElementById('noticeTitle').value='';document.getElementById('noticeBody').value='';save();alert('공지를 등록했습니다.')}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function renderAll(){renderStudent();if(sessionStorage.getItem('admin')==='1')renderAdmin()}
+renderAll();setInterval(renderAll,30000);
+</script>
+</body>
+</html>
